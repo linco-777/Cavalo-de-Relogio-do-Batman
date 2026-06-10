@@ -1,7 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 import bcrypt
 import mysql.connector
-
 app = Flask(__name__)
 app.secret_key = "chave_secreta"
 
