@@ -17,12 +17,22 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav">
-                    <li class="nav-item"><a class="nav-link" href="/home">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/tbladd">Adicionar Itens</a></li>
-                    <li class="nav-item"><a class="nav-link active" href="/tblvizu">Visualizar Itens</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/tblmove">Entrada e Saída</a></li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/home">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/tbladd">Adicionar Itens</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/tblvizu">Visualizar Itens</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/tblmove">Entrada e Saída</a>
+                    </li>
                     {% if session.get("permissao") == "admin" %}
-                    <li class="nav-item"><a class="nav-link" href="/cadastroadm">Cadastrar Usuários</a></li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/cadastroadm">Cadastrar Usuários</a>
+                    </li>
                     {% endif %}
                 </ul>
             </div>
@@ -31,6 +41,7 @@
 
     <div class="container">
         <h4>Estoque Atual</h4>
+
         <table class="table table-bordered table-hover mt-3">
             <thead>
                 <tr>
@@ -47,15 +58,15 @@
             <tbody>
                 {% for item in itens %}
                 <tr>
-                    <td>{{ item[0] }}</td>
-                    <td>{{ item[1] }}</td>
-                    <td class="{% if item[2] <= item[3] %}estoque-baixo{% endif %}">{{ item[2] }}</td>
-                    <td>{{ item[3] }}</td>
-                    <td>{{ item[4] }}</td>
-                    <td>R$ {{ "%.2f"|format(item[5]) }}</td>
-                    <td><span class="badge badge-{{ item[7] }}">{{ item[7] }}</span></td>
+                    <td>{{ item.ID }}</td>
+                    <td>{{ item.NOME }}</td>
+                    <td>{{ item.QNTD }}</td>
+                    <td>{{ item.ESTOQUE_MINIMO }}</td>
+                    <td>{{ item.DESCRICAO }}</td>
+                    <td>R$ {{ "%.2f"|format(item.PRECO) }}</td>
+                    <td>{{ item.CATEGORIA }}</td>
                     <td>
-                        <button class="btn-foto" onclick="verFoto('{{ item[6] }}', '{{ item[1] }}')">
+                        <button class="btn-foto" onclick="verFoto('{{ item.FOTO }}', '{{ item.NOME }}')">
                             Ver Foto
                         </button>
                     </td>
@@ -64,5 +75,26 @@
             </tbody>
         </table>
     </div>
+
+    <script>
+        function verFoto(foto, nome) {
+            if (!foto) {
+                Swal.fire({
+                    title: nome,
+                    text: 'Sem foto cadastrada.',
+                    icon: 'info',
+                    confirmButtonColor: '#192A6B'
+                });
+                return;
+            }
+            Swal.fire({
+                title: nome,
+                imageUrl: '/static/fotos/' + foto,
+                imageAlt: nome,
+                imageWidth: 400,
+                confirmButtonColor: '#192A6B'
+            });
+        }
+    </script>
 </body>
 </html>

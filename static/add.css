@@ -19,7 +19,7 @@ body {
 
 .container {
     margin-top: 30px;
-    max-width: 800px;
+    max-width: 700px;
 }
 
 h4 {
@@ -27,6 +27,8 @@ h4 {
     font-weight: bold;
     border-left: 5px solid #FF6800;
     padding-left: 10px;
+    margin-bottom: 25px;
+    margin-top
 }
 
 .form-label {
@@ -40,7 +42,7 @@ h4 {
     box-shadow: 0 0 0 0.2rem rgba(25, 42, 107, 0.25);
 }
 
-.btn-registrar {
+.btn-adicionar {
     background-color: #FF9500;
     border: none;
     color: #ffffff;
@@ -49,13 +51,9 @@ h4 {
     font-size: 1rem;
     cursor: pointer;
     width: 100%;
+    margin-bottom: 30px;
 }
 
-.btn-registrar:hover {
+.btn-adicionar:hover {
     background-color: #FF6800;
-}
-
-.table thead {
-    background-color: #192A6B;
-    color: #ffffff;
 }

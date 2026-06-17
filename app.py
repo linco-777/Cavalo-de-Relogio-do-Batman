@@ -35,9 +35,58 @@ def login():
 def home():
     return render_template("home.html")
 
-@app.route("/tblmove")
+@app.route("/tbladd", methods=["GET", "POST"])
+def tbladd():
+    if request.method == "POST":
+        nome = request.form["nome"]
+        qntd = request.form["qntd"]
+        estoque_minimo = request.form["estoque_minimo"]
+        descricao = request.form["descricao"]
+        preco = request.form["preco"]
+        categoria = request.form["categoria"]
+        foto = request.files["foto"]
+
+        nome_foto = foto.filename
+        foto.save("static/fotos/" + nome_foto)
+
+        conexao = conectar_bd()
+        cursor = conexao.cursor()
+        cursor.execute(
+            "INSERT INTO tblvizu (NOME, QNTD, ESTOQUE_MINIMO, DESCRICAO, PRECO, FOTO, CATEGORIA) VALUES (%s, %s, %s, %s, %s, %s, %s)",
+            (nome, qntd, estoque_minimo, descricao, preco, nome_foto, categoria)
+        )
+        conexao.commit()
+        cursor.close()
+        conexao.close()
+        flash("Item adicionado com sucesso!", "success")
+        return redirect(url_for("tbladd"))
+    return render_template("tbladd.html")
+
+@app.route("/tblmove", methods=["GET", "POST"])
 def tblmove():
-    return render_template("tblmove.html")
+    conexao = conectar_bd()
+    cursor = conexao.cursor(dictionary=True)
+    if request.method == "POST":
+        item = request.form["item"]
+        qntd = int(request.form["qntd"])
+        tipo = request.form["tipo"]
+        almoxarife = request.form["almoxarife"]
+        finalidade = request.form["finalidade"]
+        cursor.execute(
+            "INSERT INTO tblmove (ITEM, QNTD, ALMOXARIFE, TIPO, FINALIDADE) VALUES (%s, %s, %s, %s, %s)",
+            (item, qntd, almoxarife, tipo, finalidade)
+        )
+        sinal = "+" if tipo == "entrada" else "-"
+        cursor.execute(f"UPDATE tblvizu SET QNTD = QNTD {sinal} %s WHERE NOME = %s", (qntd, item))
+        conexao.commit()
+        flash("Movimentação registrada com sucesso!", "success")
+        return redirect(url_for("tblmove"))
+    cursor.execute("SELECT NOME, QNTD FROM tblvizu")
+    itens = cursor.fetchall()
+    cursor.execute("SELECT * FROM tblmove ORDER BY ID DESC")
+    movs = cursor.fetchall()
+    conexao.close()
+    return render_template("tblmove.html", itens=itens, movs=movs)
 
 @app.route("/cadastroadm", methods=["GET", "POST"])
 def cadastro():
@@ -64,8 +113,8 @@ def cadastro():
 @app.route("/tblvizu")
 def tblvizu():
     conexao = conectar_bd()
-    cursor = conexao.cursor()
-    cursor.execute("SELECT ID, NOME, QNTD, ESTOQUE_MINIMO, DESCRICAO, PRECO, FOTO, CATEGORIA FROM tblvizu")
+    cursor = conexao.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM tblvizu")
     itens = cursor.fetchall()
     cursor.close()
     conexao.close()

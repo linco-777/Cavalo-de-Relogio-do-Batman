@@ -1,54 +1,108 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Entrada e Saída</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="/static/move.css">
 </head>
 <body>
-  <nav class="navbar navbar-expand-lg">
-      <div class="container-fluid">
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-              <span class="navbar-toggler-icon"></span>
-          </button>
-          <div class="collapse navbar-collapse" id="navbarNav">
-              <ul class="navbar-nav">
-                <li class="nav-item"><a class="nav-link" href="/home">Home</a></li>
-                  <li class="nav-item"><a class="nav-link" href="/tbladd">Adicionar Itens</a></li>
-                  <li class="nav-item"><a class="nav-link" href="/tblvizu">Visualizar Itens</a></li>
-                  <li class="nav-item"><a class="nav-link active" href="/tblmove">Entrada e Saída</a></li>
-                  {% if session.get("permissao") == "admin" %}
-                  <li class="nav-item"><a class="nav-link" href="/cadastroadm">Cadastrar Usuários</a></li>
-                  {% endif %}
-              </ul>
-          </div>
-      </div>  
+    <nav class="navbar navbar-expand-lg">
+        <div class="container-fluid">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item"><a class="nav-link" href="/home">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/tbladd">Adicionar Itens</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/tblvizu">Visualizar Itens</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="/tblmove">Entrada e Saída</a></li>
+                    {% if session.get("permissao") == "admin" %}
+                    <li class="nav-item"><a class="nav-link" href="/cadastroadm">Cadastrar Usuários</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
     </nav>
-  <div class="container">
-      <h4>Movimentações</h4>
-      <table id="tabela" class="table table-bordered mt-3">
-        <thead>
-            <tr>
-              <th>ID</th>
-              <th>ITEM</th>
-              <th>QNTD</th>
-              <th>ALMOXARIFE</th>
-              <th>TIPO</th>
-              <th>FINALIDADE</th>
-              </tr>
-        </thead>
-        <tbody>
-            <tr>
-              <td></td><td></td><td></td><td></td><td></td><td></td>
-            </tr>
-            <tr>
-              <td></td><td></td><td></td><td></td><td></td><td></td>
-            </tr>
-        </tbody>
+
+    <div class="container">
+        <h4>Registrar Movimentação</h4>
+
+        <form method="POST" action="/tblmove">
+            <div class="mb-3">
+                <label class="form-label">Item</label>
+                <select name="item" class="form-select" required>
+                    {% for item in itens %}
+                    <option value="{{ item.NOME }}">{{ item.NOME }} (disponível: {{ item.QNTD }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="row">
+                <div class="col mb-3">
+                    <label class="form-label">Quantidade</label>
+                    <input type="number" name="qntd" class="form-control" min="1" required>
+                </div>
+                <div class="col mb-3">
+                    <label class="form-label">Tipo</label>
+                    <select name="tipo" class="form-select" required>
+                        <option value="entrada">Entrada</option>
+                        <option value="saida">Saída</option>
+                    </select>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Almoxarife</label>
+                <input type="text" name="almoxarife" class="form-control" placeholder="Seu nome" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Finalidade</label>
+                <input type="text" name="finalidade" class="form-control" placeholder="Ex: Aula do professor Roger" required>
+            </div>
+            <button type="submit" class="btn-registrar">Registrar</button>
+        </form>
+
+        <h4 class="mt-5">Histórico de Movimentações</h4>
+        <table class="table table-bordered mt-3">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Item</th>
+                    <th>Quantidade</th>
+                    <th>Almoxarife</th>
+                    <th>Tipo</th>
+                    <th>Finalidade</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for mov in movs %}
+                <tr>
+                    <td>{{ mov.ID }}</td>
+                    <td>{{ mov.ITEM }}</td>
+                    <td>{{ mov.QNTD }}</td>
+                    <td>{{ mov.ALMOXARIFE }}</td>
+                    <td>{{ mov.TIPO }}</td>
+                    <td>{{ mov.FINALIDADE }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
         </table>
     </div>
+
+    {% if get_flashed_messages() %}
+        {% set msgs = get_flashed_messages(with_categories=true) %}
+        <script>
+            {% for categoria, mensagem in msgs %}
+                Swal.fire({
+                    icon: '{{ "success" if categoria == "success" else "error" }}',
+                    title: '{{ mensagem }}',
+                    confirmButtonColor: '#192A6B'
+                });
+            {% endfor %}
+        </script>
+    {% endif %}
 </body>
 </html>
