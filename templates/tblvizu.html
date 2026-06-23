@@ -78,23 +78,12 @@
 
     <script>
         function verFoto(foto, nome) {
-            if (!foto) {
-                Swal.fire({
-                    title: nome,
-                    text: 'Sem foto cadastrada.',
-                    icon: 'info',
-                    confirmButtonColor: '#192A6B'
-                });
-                return;
-            }
-            Swal.fire({
-                title: nome,
-                imageUrl: '/static/fotos/' + foto,
-                imageAlt: nome,
-                imageWidth: 400,
-                confirmButtonColor: '#192A6B'
-            });
-        }
+    if (!foto) {
+        Swal.fire({ title: nome, text: 'Sem foto cadastrada.', icon: 'info', confirmButtonColor: '#192A6B' });
+        return;
+    }
+    Swal.fire({ title: nome, imageUrl: foto, imageAlt: nome, imageWidth: 400, confirmButtonColor: '#192A6B' });
+}
     </script>
 </body>
 </html>

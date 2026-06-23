@@ -40,7 +40,7 @@ CREATE TABLE tblmove (
 SELECT email, permissao FROM usuarios;
 
 INSERT INTO usuarios (email, senha_hash, permissao)
-VALUES ('admin@senai.com', '$2b$12$9Z4rD.jguGqyc08wriCjGeN314e1hjNAuFADIklk3qFUJ0SQl.ZIW', 'admin');
+VALUES ('admin@senai.com', '', 'admin');
 
 SELECT*FROM usuarios;
 SELECT*FROM tbladd;
