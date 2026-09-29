@@ -1,14 +1,11 @@
-CREATE DATABASE almoxarifado;
-USE almoxarifado;
-
-CREATE TABLE usuarios (
+CREATE TABLE IF NOT EXISTS usuarios (
     id INT AUTO_INCREMENT PRIMARY KEY,
     email VARCHAR(100) NOT NULL UNIQUE,
     senha_hash VARCHAR(255) NOT NULL,
     permissao ENUM('admin', 'user') NOT NULL
 );
 
-CREATE TABLE tblvizu (
+CREATE TABLE IF NOT EXISTS tblvizu (
     ID INT AUTO_INCREMENT PRIMARY KEY,
     NOME VARCHAR(100) NOT NULL,
     QNTD INT NOT NULL,
@@ -19,16 +16,7 @@ CREATE TABLE tblvizu (
     CATEGORIA ENUM('eletrica', 'mecanica', 'geral') NOT NULL
 );
 
-CREATE TABLE tbladd (	
-    ID INT AUTO_INCREMENT PRIMARY KEY,
-    ITEM VARCHAR(100) NOT NULL,
-    QNTD VARCHAR(500) NOT NULL,
-    ALMOXARIFE VARCHAR(50) NOT NULL,
-    TIPO VARCHAR(100) NOT NULL,
-    FINALIDADE VARCHAR(500) NOT NULL
-);
-
-CREATE TABLE tblmove (
+CREATE TABLE IF NOT EXISTS tblmove (
     ID INT AUTO_INCREMENT PRIMARY KEY,
     ITEM VARCHAR(100) NOT NULL,
     QNTD INT NOT NULL,
@@ -37,12 +25,5 @@ CREATE TABLE tblmove (
     FINALIDADE VARCHAR(500) NOT NULL
 );
 
-SELECT email, permissao FROM usuarios;
-
 INSERT INTO usuarios (email, senha_hash, permissao)
-VALUES ('admin@senai.com', '', 'admin');
-
-SELECT*FROM usuarios;
-SELECT*FROM tbladd;
-SELECT*FROM tblvizu;
-SELECT*FROM tblmove
+VALUES ('admin@senai.com', '$2b$12$eteYB07J9eJ4hKOgGqBYTezWVqL7JIep4Kqc9CA5KsHktGVmOZd5y', 'admin');

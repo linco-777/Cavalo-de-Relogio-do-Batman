@@ -1,17 +1,33 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template, request, redirect, session, flash
 import bcrypt
 import mysql.connector
-
 app = Flask(__name__)
 app.secret_key = "chave_secreta"
-
 def bd():
     return mysql.connector.connect(
-        host="localhost",
+        host="db",
         user="root",
         password="",
         database="almoxarifado"
     )
+
+def criar_admin():
+    try:
+        con = bd()
+        cur = con.cursor()
+        cur.execute("SELECT id FROM usuarios WHERE email = 'admin@senai.com'")
+        if not cur.fetchone():
+            h = bcrypt.hashpw("admin123".encode(), bcrypt.gensalt())
+            cur.execute(
+                "INSERT INTO usuarios (email, senha_hash, permissao) VALUES (%s, %s, %s)",
+                ("admin@senai.com", h, "admin")
+            )
+            con.commit()
+            print("Admin criado!")
+        cur.close()
+        con.close()
+    except Exception as e:
+        print("Erro ao criar admin:", e)
 
 @app.route("/", methods=["GET", "POST"])
 def login():
@@ -24,18 +40,22 @@ def login():
         user = cur.fetchone()
         con.close()
         if user and bcrypt.checkpw(senha.encode(), user[0].encode()):
-            session["permissao"] = user[1]
             session["email"] = email
+            session["permissao"] = user[1]
             return redirect("/home")
         flash("Email ou senha incorretos.", "danger")
     return render_template("login.html")
 
 @app.route("/home")
 def home():
+    if "email" not in session:
+        return redirect("/")
     return render_template("home.html")
 
 @app.route("/tbladd", methods=["GET", "POST"])
 def tbladd():
+    if "email" not in session:
+        return redirect("/")
     if request.method == "POST":
         con = bd()
         cur = con.cursor()
@@ -52,6 +72,8 @@ def tbladd():
 
 @app.route("/tblvizu")
 def tblvizu():
+    if "email" not in session:
+        return redirect("/")
     con = bd()
     cur = con.cursor(dictionary=True)
     cur.execute("SELECT * FROM tblvizu")
@@ -61,6 +83,8 @@ def tblvizu():
 
 @app.route("/tblmove", methods=["GET", "POST"])
 def tblmove():
+    if "email" not in session:
+        return redirect("/")
     con = bd()
     cur = con.cursor(dictionary=True)
     if request.method == "POST":
@@ -85,6 +109,8 @@ def tblmove():
 
 @app.route("/cadastroadm", methods=["GET", "POST"])
 def cadastro():
+    if "email" not in session:
+        return redirect("/")
     if session.get("permissao") != "admin":
         return redirect("/home")
     if request.method == "POST":
@@ -101,5 +127,11 @@ def cadastro():
         return redirect("/cadastroadm")
     return render_template("cadastro.html")
 
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect("/")
+
 if __name__ == "__main__":
+    criar_admin()
     app.run(debug=True, host="0.0.0.0", port=5000, use_reloader=False)
