@@ -19,7 +19,7 @@ def criar_admin():
         cur = con.cursor()
         cur.execute("SELECT id FROM usuarios WHERE email = 'admin@senai.com'")
         if not cur.fetchone():
-            h = bcrypt.hashpw("admin123".encode(), bcrypt.gensalt())
+            h = bcrypt.hashpw("senai123".encode(), bcrypt.gensalt())
             cur.execute(
                 "INSERT INTO usuarios (email, senha_hash, permissao) VALUES (%s, %s, %s)",
                 ("admin@senai.com", h, "admin")
@@ -40,6 +40,7 @@ def login():
         cur = con.cursor()
         cur.execute("SELECT senha_hash, permissao FROM usuarios WHERE email = %s", (email,))
         user = cur.fetchone()
+        cur.close()
         con.close()
         if user and bcrypt.checkpw(senha.encode(), user[0].encode()):
             session["email"] = email
@@ -67,6 +68,7 @@ def tbladd():
              request.form["descricao"], request.form["preco"], request.form["foto"], request.form["categoria"])
         )
         con.commit()
+        cur.close()
         con.close()
         flash("Item adicionado!", "success")
         return redirect("/tbladd")
@@ -80,6 +82,7 @@ def tblvizu():
     cur = con.cursor(dictionary=True)
     cur.execute("SELECT * FROM tblvizu")
     itens = cur.fetchall()
+    cur.close()
     con.close()
     return render_template("tblvizu.html", itens=itens)
 
@@ -100,12 +103,15 @@ def tblmove():
         sinal = "+" if tipo == "entrada" else "-"
         cur.execute(f"UPDATE tblvizu SET QNTD = QNTD {sinal} %s WHERE NOME = %s", (qntd, item))
         con.commit()
+        cur.close()
+        con.close()
         flash("Movimentação registrada!", "success")
         return redirect("/tblmove")
     cur.execute("SELECT NOME, QNTD FROM tblvizu")
     itens = cur.fetchall()
     cur.execute("SELECT * FROM tblmove ORDER BY ID DESC")
     movs = cur.fetchall()
+    cur.close()
     con.close()
     return render_template("tblmove.html", itens=itens, movs=movs)
 
@@ -124,6 +130,7 @@ def cadastro():
             (request.form["email"], senha_hash, request.form["permissao"])
         )
         con.commit()
+        cur.close()
         con.close()
         flash("Usuário cadastrado!", "success")
         return redirect("/cadastroadm")
@@ -136,12 +143,29 @@ def logout():
 
 
 
+
+@app.route("/api/login", methods=["POST"])
+def api_login():
+    dados = request.get_json()
+    email = dados.get("email")
+    senha = dados.get("senha")
+    con = bd()
+    cur = con.cursor()
+    cur.execute("SELECT senha_hash, permissao FROM usuarios WHERE email = %s", (email,))
+    user = cur.fetchone()
+    cur.close()
+    con.close()
+    if user and bcrypt.checkpw(senha.encode(), user[0].encode()):
+        return jsonify({"status": "sucesso", "permissao": user[1], "email": email})
+    return jsonify({"status": "erro", "mensagem": "Email ou senha incorretos."}), 401
+
 @app.route("/api/produtos", methods=["GET"])
 def api_get_produtos():
     con = bd()
     cur = con.cursor(dictionary=True)
     cur.execute("SELECT * FROM tblvizu")
     itens = cur.fetchall()
+    cur.close()
     con.close()
     return jsonify(itens)
 
@@ -156,6 +180,7 @@ def api_post_produtos():
          dados.get("descricao"), dados.get("preco"), dados.get("foto"), dados.get("categoria"))
     )
     con.commit()
+    cur.close()
     con.close()
     return jsonify({"status": "sucesso", "mensagem": "Item inserido!"}), 201
 
@@ -165,6 +190,7 @@ def api_get_movimentacoes():
     cur = con.cursor(dictionary=True)
     cur.execute("SELECT * FROM tblmove ORDER BY ID DESC")
     movs = cur.fetchall()
+    cur.close()
     con.close()
     return jsonify(movs)
 
@@ -183,6 +209,7 @@ def api_post_movimentacoes():
     sinal = "+" if tipo == "entrada" else "-"
     cur.execute(f"UPDATE tblvizu SET QNTD = QNTD {sinal} %s WHERE NOME = %s", (qntd, item))
     con.commit()
+    cur.close()
     con.close()
     return jsonify({"status": "sucesso", "mensagem": "Movimentação registrada!"}), 201
 
@@ -192,6 +219,7 @@ def api_get_usuarios():
     cur = con.cursor(dictionary=True)
     cur.execute("SELECT id, email, permissao FROM usuarios")
     usuarios = cur.fetchall()
+    cur.close()
     con.close()
     return jsonify(usuarios)
 
