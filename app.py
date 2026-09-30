@@ -1,8 +1,10 @@
-from flask import Flask, render_template, request, redirect, session, flash
+from flask import Flask, render_template, request, redirect, session, flash, jsonify
 import bcrypt
 import mysql.connector
+
 app = Flask(__name__)
 app.secret_key = "chave_secreta"
+
 def bd():
     return mysql.connector.connect(
         host="db",
@@ -131,6 +133,67 @@ def cadastro():
 def logout():
     session.clear()
     return redirect("/")
+
+
+
+@app.route("/api/produtos", methods=["GET"])
+def api_get_produtos():
+    con = bd()
+    cur = con.cursor(dictionary=True)
+    cur.execute("SELECT * FROM tblvizu")
+    itens = cur.fetchall()
+    con.close()
+    return jsonify(itens)
+
+@app.route("/api/produtos", methods=["POST"])
+def api_post_produtos():
+    dados = request.get_json()
+    con = bd()
+    cur = con.cursor()
+    cur.execute(
+        "INSERT INTO tblvizu (NOME, QNTD, ESTOQUE_MINIMO, DESCRICAO, PRECO, FOTO, CATEGORIA) VALUES (%s, %s, %s, %s, %s, %s, %s)",
+        (dados.get("nome"), dados.get("qntd"), dados.get("estoque_minimo"),
+         dados.get("descricao"), dados.get("preco"), dados.get("foto"), dados.get("categoria"))
+    )
+    con.commit()
+    con.close()
+    return jsonify({"status": "sucesso", "mensagem": "Item inserido!"}), 201
+
+@app.route("/api/movimentacoes", methods=["GET"])
+def api_get_movimentacoes():
+    con = bd()
+    cur = con.cursor(dictionary=True)
+    cur.execute("SELECT * FROM tblmove ORDER BY ID DESC")
+    movs = cur.fetchall()
+    con.close()
+    return jsonify(movs)
+
+@app.route("/api/movimentacoes", methods=["POST"])
+def api_post_movimentacoes():
+    dados = request.get_json()
+    item = dados.get("item")
+    qntd = int(dados.get("qntd"))
+    tipo = dados.get("tipo")
+    con = bd()
+    cur = con.cursor()
+    cur.execute(
+        "INSERT INTO tblmove (ITEM, QNTD, ALMOXARIFE, TIPO, FINALIDADE) VALUES (%s, %s, %s, %s, %s)",
+        (item, qntd, dados.get("almoxarife"), tipo, dados.get("finalidade"))
+    )
+    sinal = "+" if tipo == "entrada" else "-"
+    cur.execute(f"UPDATE tblvizu SET QNTD = QNTD {sinal} %s WHERE NOME = %s", (qntd, item))
+    con.commit()
+    con.close()
+    return jsonify({"status": "sucesso", "mensagem": "Movimentação registrada!"}), 201
+
+@app.route("/api/usuarios", methods=["GET"])
+def api_get_usuarios():
+    con = bd()
+    cur = con.cursor(dictionary=True)
+    cur.execute("SELECT id, email, permissao FROM usuarios")
+    usuarios = cur.fetchall()
+    con.close()
+    return jsonify(usuarios)
 
 if __name__ == "__main__":
     criar_admin()

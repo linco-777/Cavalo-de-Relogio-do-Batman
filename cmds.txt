@@ -10,6 +10,9 @@ python -c "import bcrypt; print(bcrypt.hashpw('senai123'.encode(), bcrypt.gensal
 
 python --version
 
+docker compose down
+docker compose up --build
+
 
 git config --global user.name ""
 git config --global user.email ""
